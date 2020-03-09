@@ -39,3 +39,10 @@ Without a config file
 ```
 http://0.0.0.0:5000/poll/<ip:port>
 ```
+
+
+## Example config file
+```
+{"host": "minecraft.net",
+"port": 25565}
+```
