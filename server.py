@@ -15,15 +15,35 @@ api = Api(app)
 CORS(app)
 
 
+def get_server(HOST, PORT):
+    return mcs.MinecraftServer.lookup("{}:{}".format(HOST, PORT))
+
 @app.route('/poll')
 def poll_server():
-    print(settings)
     HOST = settings["host"]
-    print(HOST)
     PORT = settings["port"]
-    print(PORT)
 
-    server = mcs.MinecraftServer.lookup("{}:{}".format(HOST, PORT))
+    server = get_server(HOST, PORT)
+    status = server.status()
+
+    payload = {"online_players": status.players.online,
+               "max_players": status.players.max,
+               "server_version": status.version.name,
+               "server_description": status.description["text"]}
+
+    return payload
+
+
+@app.route('/poll/<url>')
+def poll_url(url):
+    if ':' in url:
+        HOST = url.split(':')[0]
+        PORT = url.split(':')[1]
+    else:
+        HOST = url
+        PORT = 25565
+
+    server = get_server(HOST, PORT)
     status = server.status()
 
     payload = {"online_players": status.players.online,
@@ -42,8 +62,7 @@ def main():
             settings = json.loads(s.read())
         app.run(host='0.0.0.0', port='5000')
     else:
-        print("Conf file does not exist, exiting")
-        exit(1)
+        print("Conf file does not exist, /poll will not work")
 
 
 if __name__ == "__main__":
